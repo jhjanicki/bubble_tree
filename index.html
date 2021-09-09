@@ -2,7 +2,7 @@
 <meta charset='utf-8'>
 
 <head>
-    <title>Simple Tree (d3 v4; CSV; 63 Lines)</title>
+    <title>Bubble tree</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.0.1/d3.min.js"></script>
     <script src="./data/data2.js"></script>
 </head>
@@ -15,50 +15,48 @@
 </div>
 
 <script>
-    var width = 1400;
-    var height = 750;
+    const width = 1400;
+    const height = 750;
 
     // Prepare our physical space
-    var svg = d3
+    const svg = d3
         .select('#chart')
         .append('svg')
         .attr('width', width)
         .attr('height', height)
-    // .attr('viewBox', "0 0 " + 225 + " " + 225);
 
-    var g = svg.append('g')
+    const g = svg.append('g')
         .attr('transform', "translate(20,50)");
 
-
-    var colorScale = d3.scaleOrdinal()
+    const colorScale = d3.scaleOrdinal()
         .domain(["level1", "level2", "level3", "level4", "level5", "level6"])
         .range(["#49006a", "#7a0177", "#c51b8a", "#f768a1", "#fa9fb5", "#fcc5c0", "#feebe2"]);
 
-    var fontScale = d3.scaleOrdinal()
+    const fontScale = d3.scaleOrdinal()
         .domain(["1", "2", "3", "4", "5", "6"])
         .range([9, 9, 9, 7, 7, 5.5]);
 
-    var reduceFn =
+    //prepare data
+    const reduceFn =
         data => d3.sum(data, d => d.count);
 
-    var groupingFns = [d => d.base, d => d.base2, d => d.sugar, d => d.fruit, d => d.texture, d => d.drinkEN]
+    const groupingFns = [d => d.base, d => d.base2, d => d.sugar, d => d.fruit, d => d.texture, d => d.drinkEN]
 
-    var rollupData = d3.rollup(data, reduceFn, ...groupingFns);
+    const rollupData = d3.rollup(data, reduceFn, ...groupingFns);
 
-    var childrenAccessorFn = ([key, value]) => value.size && Array.from(value)
+    const childrenAccessorFn = ([key, value]) => value.size && Array.from(value)
 
-    var hierarchyData = d3.hierarchy([null, rollupData], childrenAccessorFn)
+    const hierarchyData = d3.hierarchy([null, rollupData], childrenAccessorFn)
         .sum(([key, value]) => value)
         .sort((a, b) => b.value - a.value)
 
     // Declare d3 layout
-    var vLayout = d3.tree().size([width * 0.98, height * 0.85]);
+    const vLayout = d3.tree().size([width * 0.98, height * 0.85]);
 
     // Layout + Data
-    var vRoot = hierarchyData;
-    var vNodes = vRoot.descendants();
-    var vLinks = vLayout(vRoot).links();
-
+    const vRoot = hierarchyData;
+    const vNodes = vRoot.descendants();
+    const vLinks = vLayout(vRoot).links();
 
     const filterData = (targetHeight) => (vLinks.filter(d => d.target.height == targetHeight))
 
@@ -69,7 +67,31 @@
     const level5Data = filterData(1);
     const level6Data = filterData(0);
 
-    console.log(level2Data)
+    const wrap = (text, width) => {
+        text.each(function () {
+            var text = d3.select(this),
+                words = text.text().split(/\s+/).reverse(),
+                word,
+                line = [],
+                lineNumber = 1, //<-- 0!
+                lineHeight = 1.1, // ems
+                x = text.attr("x"), //<-- include the x!
+                y = text.attr("y"),
+                dy = text.attr("dy") ? text.attr("dy") : 0; //<-- null check
+            tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
+            while (word = words.pop()) {
+                line.push(word);
+                tspan.text(line.join(" "));
+                if (tspan.node().getComputedTextLength() > width) {
+                    line.pop();
+                    tspan.text(line.join(" "));
+                    line = [word];
+                    tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
+                }
+            }
+        });
+    }
+
 
     const drawViz = (className, data) => {
 
@@ -89,15 +111,11 @@
             })
             .transition()
             .duration(1500)
-            .attr("id", function (d) {
-                console.log(d)
-            })
             .attr("stroke-dashoffset", 0)
             .attr("opacity", 0.7)
             .attr("stroke-width", 1.5)
             .attr("fill", "none")
             .attr("stroke", colorScale(className))
-
     }
 
     const drawText = (className, data) => {
@@ -130,32 +148,6 @@
     drawDelay("level5", level5Data, "level4Text", level4Data, 6000, true);
     drawDelay("level6", level6Data, "level5Text", level5Data, 7500, true);
     drawDelay("level6", level6Data, "level6Text", level6Data, 9000, false);
-
-
-    function wrap(text, width) {
-        text.each(function () {
-            var text = d3.select(this),
-                words = text.text().split(/\s+/).reverse(),
-                word,
-                line = [],
-                lineNumber = 1, //<-- 0!
-                lineHeight = 1.1, // ems
-                x = text.attr("x"), //<-- include the x!
-                y = text.attr("y"),
-                dy = text.attr("dy") ? text.attr("dy") : 0; //<-- null check
-            tspan = text.text(null).append("tspan").attr("x", x).attr("y", y).attr("dy", dy + "em");
-            while (word = words.pop()) {
-                line.push(word);
-                tspan.text(line.join(" "));
-                if (tspan.node().getComputedTextLength() > width) {
-                    line.pop();
-                    tspan.text(line.join(" "));
-                    line = [word];
-                    tspan = text.append("tspan").attr("x", x).attr("y", y).attr("dy", ++lineNumber * lineHeight + dy + "em").text(word);
-                }
-            }
-        });
-    }
 
 
 </script>
