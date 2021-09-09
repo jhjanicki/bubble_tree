@@ -1,0 +1,30 @@
+﻿base,base2,sugar,fruit,texture,count,drinkEN,categoryEN,storeEN
+Baozhong tea,No,No,No,No,1,Muzha baozhong tea,Pure tea,Island black tea specialized
+Baozhong tea,No,Sugar cane,No,No,1,Sugar cane boazhong tea,Fruit tea,Island black tea specialized
+Baozhong tea,No,No,Lemon,No,1,Lemon baozhong tea,Fruit tea,Island black tea specialized
+Baozhong tea,No,No,Winter melon,No,1,Winter melon baozhong tea,Seasonal,Island black tea specialized
+Black tea,No,No,No,No,1,Island black tea,Pure tea,Island black tea specialized
+Black tea,Milk powder,No,No,No,1,Milk tea,Milk tea,Island black tea specialized
+Black tea,Milk powder,No,No,Boba,1,Boba milk tea,Milk tea,Island black tea specialized
+Black tea,Milk powder,No,No,Pudding,1,Pudding milk tea,Milk tea,Island black tea specialized
+Black tea,Milk powder,No,No,Grass jelly,1,Grass jelly milk tea,Milk tea,Island black tea specialized
+Black tea,Fresh milk,No,No,No,1,Black tea latte,Fresh milk,Island black tea specialized
+Grass jelly tea,No,No,No,Grass jelly,1,Grass jelly drink,Seasonal,Island black tea specialized
+Green tea,No,No,No,No,1,Luye biluchun green tea,Pure tea,Island black tea specialized
+Green tea,No,No,Passion fruit,No,1,Passion fruit green tea,Fruit tea,Island black tea specialized
+Green tea,No,No,Plum,No,1,Plum green tea,Fruit tea,Island black tea specialized
+Green tea,Milk powder,No,No,No,1,Green milk tea,Milk tea,Island black tea specialized
+Hibiscus tea,No,No,Hawthorn,No,1,Hawthorn hibiscus drink,Seasonal,Island black tea specialized
+Lemon tea,No,No,No,Aiyu jelly,1,Aiyu jelly lemon tea,Fruit tea,Island black tea specialized
+Lemon tea,No,No,Kumquat,No,1,Kumquat lemon tea,Fruit tea,Island black tea specialized
+Lemon tea,No,No,No,No,1,Iced lemon tea,Fruit tea,Island black tea specialized
+Lemonade,No,No,Kumquat,No,1,Kumquat lemonade,Fruit tea,Island black tea specialized
+Lemonade,No,No,Winter melon,No,1,Winter melon lemonade,Fruit tea,Island black tea specialized
+Milk,Fresh milk,Brown sugar,No,No,1,Brown sugar boba milk,Fresh milk,Island black tea specialized
+Milk,Fresh milk,No,No,Red bean jelly,1,Red bean jelly milk,Fresh milk,Island black tea specialized
+Milk,Fresh milk,No,Winter melon,No,1,Winter melon milk,Fresh milk,Island black tea specialized
+Oolong tea,No,No,No,No,1,Alishan oolong tea,Pure tea,Island black tea specialized
+Oolong tea,Yes,No,No,No,1,Oolong milk tea,Milk tea,Island black tea specialized
+Oolong tea,Fresh milk,No,No,No,1,Oolong tea latte,Fresh milk,Island black tea specialized
+Plum tea,No,Sugar cane,No,No,1,Sugar cane smoked plum tea,Seasonal,Island black tea specialized
+Winter melon tea,No,No,No,No,1,Winter melon drink,Seasonal,Island black tea specialized
