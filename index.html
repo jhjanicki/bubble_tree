@@ -3,20 +3,37 @@
 
 <head>
     <title>Bubble tree</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans+Condensed:wght@300;700&display=swap"
+        rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.0.1/d3.min.js"></script>
-    <script src="./data/data2.js"></script>
+    <script src="./data/data.js"></script>
+    <script src='./textures.min.js'></script>
+
 </head>
 
 <style>
+    body {
+        font-family: 'Open Sans Condensed', sans-serif;
+    }
+
+    circle:hover {
+        cursor: pointer;
+    }
 </style>
 
 <div id="chart">
-
 </div>
+
+<!-- <form id="myForm">
+    <select id="select">
+        <option>Choose</option>
+    </select>
+</form> -->
+
 
 <script>
     const width = 1400;
-    const height = 750;
+    const height = 700;
 
     // Prepare our physical space
     const svg = d3
@@ -28,19 +45,28 @@
     const g = svg.append('g')
         .attr('transform', "translate(20,50)");
 
+    // all the scales
     const colorScale = d3.scaleOrdinal()
         .domain(["level1", "level2", "level3", "level4", "level5", "level6"])
-        .range(["#49006a", "#7a0177", "#c51b8a", "#f768a1", "#fa9fb5", "#fcc5c0", "#feebe2"]);
+        .range(["#49006a", "#7a0177", "#c51b8a", "#f768a1", "#fa9fb5", "#fcc5c0"]);
 
     const fontScale = d3.scaleOrdinal()
         .domain(["1", "2", "3", "4", "5", "6"])
-        .range([9, 9, 9, 7, 7, 5.5]);
+        .range([10.5, 10.5, 10.5, 9.5, 9.5, 8]);
+
+    const textYTranslateScale = d3.scaleOrdinal()
+        .domain(["1", "2", "3", "4", "5", "6"])
+        .range([35, 35, 26, 24, 22, -5]);
+
+    const categories = ["Base", "Milk / Yakult", "Coffee", "Fruit", "Texture", ""];
+    const textScale = d3.scaleOrdinal().domain([0, 1, 2, 3, 4]).range(categories);
+
 
     //prepare data
     const reduceFn =
         data => d3.sum(data, d => d.count);
 
-    const groupingFns = [d => d.base, d => d.base2, d => d.sugar, d => d.fruit, d => d.texture, d => d.drinkEN]
+    const groupingFns = [d => d.base, d => d.base2, d => d.coffee, d => d.fruit, d => d.texture, d => d.drinkEN]
 
     const rollupData = d3.rollup(data, reduceFn, ...groupingFns);
 
@@ -50,15 +76,37 @@
         .sum(([key, value]) => value)
         .sort((a, b) => b.value - a.value)
 
+    //Array.from(hierarchyData, ([key, values]) => console.log(values))
+    const grouped = d3.group(data, ...groupingFns) //not used, just for testing
+
     // Declare d3 layout
-    const vLayout = d3.tree().size([width * 0.98, height * 0.85]);
+    const vLayout = d3.tree().size([width * 0.98, height * 0.75]);
 
     // Layout + Data
     const vRoot = hierarchyData;
     const vNodes = vRoot.descendants();
     const vLinks = vLayout(vRoot).links();
+    const vLeaves = vRoot.leaves(); // just to get a list of drinks, not used unless using dropdown
+
+    // const drinksArray = [];
+
+    // vLeaves.forEach(function (d) {
+    //     drinksArray.push(d.data[0])
+    // }) // to add as options in the dropdown menu
+
+    // var select = document.getElementById("select");
+
+    // for (var i = 0; i < drinksArray.length; i++) {
+    //     var opt = drinksArray[i];
+    //     var el = document.createElement("option");
+    //     el.textContent = opt;
+    //     el.value = opt;
+    //     select.appendChild(el);
+    // }
+
 
     const filterData = (targetHeight) => (vLinks.filter(d => d.target.height == targetHeight))
+    const filterDataNodes = (targetHeight) => (vNodes.filter(d => d.height == targetHeight))
 
     const level1Data = filterData(5);
     const level2Data = filterData(4);
@@ -66,6 +114,104 @@
     const level4Data = filterData(2);
     const level5Data = filterData(1);
     const level6Data = filterData(0);
+    const level6DataNodes = filterDataNodes(0);
+
+
+    const bgData = [{ "y0": level1Data[0].source.y, "y1": level1Data[0].target.y },
+    { "y0": level2Data[0].source.y, "y1": level2Data[0].target.y },
+    { "y0": level3Data[0].source.y, "y1": level3Data[0].target.y },
+    { "y0": level4Data[0].source.y, "y1": level4Data[0].target.y },
+    { "y0": level5Data[0].source.y, "y1": level5Data[0].target.y },
+    { "y0": level6Data[0].source.y, "y1": level6Data[0].target.y }];
+
+
+
+    function flatten(root) {
+        var nodes = [],
+            i = 0;
+
+        function recurse(node) {
+            if (node.children) node.children.forEach(recurse);
+            if (node._children) node._children.forEach(recurse);
+            if (!node.id) node.id = ++i;
+            nodes.push(node);
+        }
+
+        recurse(root);
+        return nodes;
+    }
+
+    //how is this different than vNodes?
+    console.log(vNodes)
+
+    //flatData.forEach(d => console.log(d.data[0]))
+
+    function update(source) {
+
+        // Compute the new tree layout.
+        var nodes = vRoot.descendants().reverse(),
+            links = vLayout(nodes).links();
+
+        nodes.forEach(function (d) {
+
+            if (level < d.depth)
+                level = d.depth;
+
+        });
+    };
+
+
+    d3.select("#select")
+        .on("change", function () {
+
+            var select = d3.select("#select").node().value;
+            if (select == "Choose") {
+                doReset();
+                return;
+            }
+            var find = flatten(vRoot).find(function (d) {
+                if (d.data[0] == select)
+                    return true;
+            });
+            doReset()
+            while (find.parent) {
+                find.color = "black";
+                find.stroke = "3";
+                find = find.parent;
+            }
+            update(find)
+        });
+
+    function update(source) {
+
+        d3.selectAll("path.path").style("stroke", function (d) {
+
+            if (d.target.color) {
+                return d.target.color
+            } else {
+                return colorScale(d3.select(this).attr("class"))
+            }
+        })
+
+        d3.selectAll("path.path").style("stroke-width", function (d) {
+
+            if (d.target.stroke) {
+                return +d.target.stroke
+            } else {
+                return 1.5
+            }
+        })
+
+    }
+
+    function doReset() {
+        flatten(vRoot).forEach(function (d) {
+            console.log(d)
+            d.color = undefined;
+            d.stroke = undefined;
+        })
+        update(vRoot);
+    }
 
     const wrap = (text, width) => {
         text.each(function () {
@@ -92,11 +238,41 @@
         });
     }
 
+    var texture = textures
+        .lines()
+        .size(7)
+        .strokeWidth(1)
+        .stroke('#f0f0f0');
+
+    svg.call(texture);
+
+    const drawBG = () => {
+
+        g.selectAll("rect").data(bgData).join("rect")
+            .attr('x', 0)
+            .attr('y', d => d.y0)
+            .attr('width', width * 0.98)
+            .attr('height', d => (d.y1 - d.y0))
+            .attr('opacity', (d, i) => i % 2 == 0 ? 1 : 0)
+            .attr('fill', texture.url());
+
+        g.selectAll("text.fork").data(bgData).join("text")
+            .attr("class", "fork")
+            .attr('x', 0)
+            .attr('y', d => d.y1 - (d.y1 - d.y0) / 2 + 5)
+            .style("font-family", 'Open Sans Condensed')
+            .style("font-size", 18)
+            .style("font-weight", 300)
+            .attr("text-anchor", "start")
+            .text((d, i) => textScale(i))
+    }
+
+    drawBG()
 
     const drawViz = (className, data) => {
 
-        g.selectAll(`path.${className}`).data(data).join('path')
-            .attr("class", className)
+        g.selectAll(`path.${className}.path`).data(data).join('path')
+            .attr("class", `${className} path`)
             .attr('d', d3.linkVertical()
                 .x(function (d) { return d.x; })
                 .y(function (d) { return d.y; }))
@@ -110,25 +286,86 @@
                 return totalLength;
             })
             .transition()
-            .duration(1500)
+            .duration(1000)
             .attr("stroke-dashoffset", 0)
-            .attr("opacity", 0.7)
+            .attr("opacity", 0.4)
             .attr("stroke-width", 1.5)
             .attr("fill", "none")
             .attr("stroke", colorScale(className))
+
     }
 
     const drawText = (className, data) => {
         g.selectAll(`text.${className}`).data(data).join('text')
             .attr("class", className)
+            .attr("id", d => `text${d.target.data[0].replace(/ /g, "_") + className.charAt(5)}`)
             .attr("x", d => d.target.x)
-            .attr("y", d => d.target.y)
+            //.attr("y", d => className.charAt(5) == 6 ? d.target.y + 2 : d.target.y - 35)
+            .attr("y", d => d.target.y - textYTranslateScale(className.charAt(5)))
             .attr("dy", 1)
             .style("font-size", fontScale(className.charAt(5)))
-            .style("font-family", 'Roboto')
+            .style("font-family", 'Open Sans Condensed')
             .attr("text-anchor", "middle")
-            .text(d => d.target.data[0])
-            .call(wrap, 24);
+            .text(d => d.target.data[0] == "No" ? "" : d.target.data[0])
+            .call(wrap, 6);
+        //trick is too make it really small so all words are on their own lines and all text groups would have a gap on top, so they start at the same level
+
+    }
+
+    const drawCircle = (className, data) => {
+
+        g.selectAll(`circle.${className}`).data(data).join('circle')
+            .attr("class", className)
+            .attr("cx", d => d.x)
+            //.attr("cy", d => d.y)
+            .attr("cy", function (d) {
+                return d.y;
+            })
+            .attr("r", 5)
+            .attr("id", d => `circle${d.data[0].replace(/ /g, "_") + className.charAt(5)}`)
+            .attr("fill", colorScale(className))
+            .on("mouseenter", function (e) {
+                // var [offsetX, offsetY] = d3.pointer(e);
+                // console.log(d3.pointer(e))
+                // fisheye.focus([offsetX, offsetY]);
+                var id = d3.select(this).attr("id").substring(6)
+                var textClass = className + "Text";
+                d3.select(this).style("cursor", 'pointer');
+                d3.select(this).attr("r", 7);
+                d3.selectAll(`.${textClass}`).attr("opacity", 0.5);
+                d3.select(`#text${id}`).style("font-size", 11);
+                d3.select(`#text${id}`).attr("opacity", 1);
+                d3.select(`#text${id}`).style("font-weight", 700);
+            })
+            .on("mouseout", function (e) {
+                var id = d3.select(this).attr("id").substring(6)
+                d3.select(`#text${id}`).style("font-size", fontScale(className.charAt(5)));
+                d3.selectAll("text").attr("opacity", 1);
+                d3.selectAll("text").style("font-weight", 300);
+                d3.selectAll("circle").attr("r", 5);
+            })
+            .on("click", function (e, data) {
+
+                var select = data.data[0]
+                if (select == "Choose") {
+                    doReset();
+                    return;
+                }
+                var find = flatten(vRoot).find(function (d) {
+                    if (d.data[0] == select)
+                        return true;
+                });
+                doReset()
+                while (find.parent) {
+                    find.color = "black";
+                    find.stroke = "3";
+                    find = find.parent;
+                }
+                update(find)
+
+                d3.selectAll("circle").attr("fill", colorScale(className))
+                d3.select(this).attr("fill", "gray")
+            })
     }
 
 
@@ -137,17 +374,21 @@
             function () {
                 if (viz) { drawViz(className, data); }
                 drawText(classNameText, dataText)
+                if (!viz) {
+                    drawCircle(className, level6DataNodes)
+                }
             }, time);
 
     }
 
     drawViz("level1", level1Data);
-    drawDelay("level2", level2Data, "level1Text", level1Data, 1500, true);
-    drawDelay("level3", level3Data, "level2Text", level2Data, 3000, true);
-    drawDelay("level4", level4Data, "level3Text", level3Data, 4500, true);
-    drawDelay("level5", level5Data, "level4Text", level4Data, 6000, true);
-    drawDelay("level6", level6Data, "level5Text", level5Data, 7500, true);
-    drawDelay("level6", level6Data, "level6Text", level6Data, 9000, false);
+    drawDelay("level2", level2Data, "level1Text", level1Data, 1000, true);
+    drawDelay("level3", level3Data, "level2Text", level2Data, 2000, true);
+    drawDelay("level4", level4Data, "level3Text", level3Data, 3000, true);
+    drawDelay("level5", level5Data, "level4Text", level4Data, 4000, true);
+    drawDelay("level6", level6Data, "level5Text", level5Data, 5000, true);
+    drawDelay("level6", level6Data, "level6Text", level6Data, 6000, false);
+
 
 
 </script>
